@@ -8,6 +8,11 @@ motif de rejet. Ces fonctions sont appelées par scripts/importer.py et
 couvertes par tests/unit/.
 """
 import pandas as pd
+import datetime as dt
+
+df_incidents = pd.read_csv("./data/incidents.csv")
+df_stations = pd.read_csv("./data/stations.csv")
+df_trajets = pd.read_csv("./data/trajets.csv")
 
 # def afficher_anomalie(code, description, df, masque):
 #     # loc[] sélectionne les lignes pour lesquelles le masque vaut True.
@@ -112,8 +117,8 @@ import pandas as pd
 #     return (df_incidents, df_stations, df_trajets)
 
 def correction_doublons(df, df_nom):
-    df_doublons=df[df[df.pd.duplicated()]] # donnees a supprimer
-    df_clean=df[df[not(df.pd.duplicated())]] # donnees a garder
+    df_doublons=df[df.duplicated()] # donnees a supprimer
+    df_clean=df[~(df.duplicated())] # donnees a garder
     lignes_invalides=[]
     for index, row in df_doublons.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
         ligne_invalide={
@@ -127,9 +132,10 @@ def correction_doublons(df, df_nom):
         lignes_invalides.append(ligne_invalide)
     return df_clean, lignes_invalides
 
+
 def capacite_zero(df):
-    df_incorrect=df[df["capacite" < 0]] # donnees a supprimer
-    df_clean=df[df["capacite" > 0]] # donnees a garder
+    df_incorrect=df[df["capacite"] <= 0] # donnees a supprimer
+    df_clean=df[df["capacite"] > 0] # donnees a garder
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
         ligne_invalide={
@@ -143,16 +149,33 @@ def capacite_zero(df):
         lignes_invalides.append(ligne_invalide)
     return df_clean, lignes_invalides
 
-def format_date(df, df_nom, df_date):
-    df_incorrect=([]) # donnees a supprimer
-    df_clean=pd.to_datetime(
-        df[df_date],
-        format="%Y-%m-%d",
+
+def format_date(df, df_nom, df_date, df_format):
+    dates_propres = df.copy()
+
+    date_iso = pd.to_datetime(
+        dates_propres[df_date],
+        format=df_format,
         errors="coerce",
+    )
+
+    date_fr = pd.to_datetime(
+        dates_propres[df_date],
+        format="%d/%m/%Y %H:%M",
+        errors="coerce",
+    )
+
+    dates_normalisees = date_iso.fillna(date_fr)
+
+    dates_propres[df_date] = (
+        dates_normalisees.dt.strftime(df_format)
     ) # donnees a garder
-    for l in df :
-        if df[l] not in df_clean :
-            df_incorrect = pd.concat(df_incorrect, df[l])
+
+    df_clean = df
+    df_clean[df_date] = pd.to_datetime(dates_propres[df_date]).dt.date
+
+    df_incorrect = df[(df[df_date] != (df_clean[df_date])) & df[df_date].notna()]
+    
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
         ligne_invalide={
@@ -166,9 +189,10 @@ def format_date(df, df_nom, df_date):
         lignes_invalides.append(ligne_invalide)
     return df_clean, lignes_invalides
 
+
 def correlation_dates(df):
-    df_incorrect=df[df["date_signalement" >= "date_resolution"]] # donnees a supprimer
-    df_clean=df[df["date_signalement" < "date_resolution"]] # donnees a garder
+    df_incorrect=df[df["date_signalement"] >= df["date_resolution"]] # donnees a supprimer
+    df_clean=df[df["date_signalement"] < df["date_resolution"]] # donnees a garder
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
         ligne_invalide={
@@ -182,31 +206,32 @@ def correlation_dates(df):
         lignes_invalides.append(ligne_invalide)
     return df_clean, lignes_invalides
 
+
 def correlation_cible(df):
     df_incorrect=df[
         (
-            df["cible" == "velo"] 
-            and (df["velo_id" != ""] 
-            or df["station_id" == ""])
+            (df["cible"] == "velo")
+            & ((df["velo_id"].isna()) 
+            | (df["station_id"].notna()))
         ) 
-        or 
+        | 
         (
-            df["cible" == "station"] 
-            and (df["velo_id" == ""] 
-            or df["station_id" != ""])
+            (df["cible"] == "station")
+            & ((df["velo_id"].notna()) 
+            | (df["station_id"].isna()))
         )
     ] # donnees a supprimer
     df_clean=df[
         (
-            df["cible" == "velo"] 
-            and df["velo_id" == ""] 
-            and df["station_id" != ""]
+            (df["cible"] == "velo") 
+            & (df["velo_id"].notna())
+            & (df["station_id"].isna())
         ) 
-        or 
+        | 
         (
-            df["cible" == "station"] 
-            and df["velo_id" != ""] 
-            and df["station_id" == ""]
+            (df["cible"] == "station")
+            & (df["velo_id"].isna())
+            & (df["station_id"].notna())
         )
     ] # donnees a garder
     lignes_invalides=[]
@@ -222,9 +247,10 @@ def correlation_cible(df):
         lignes_invalides.append(ligne_invalide)
     return df_clean, lignes_invalides
 
-def id_existant(df, df_ref, id, df_nom):
-    df_incorrect=df[df[id] != df_ref[id]] # donnees a supprimer
-    df_clean=df[df[id] == df_ref[id]] # donnees a garder
+
+def id_existant(df, df_ref, id, id_ref, df_nom):
+    df_incorrect=df[(~df[id].isin(df_ref[id_ref])) & df[id].notna()] # donnees a supprimer
+    df_clean=df[df[id].isin(df_ref[id_ref]) | df[id].isna()] # donnees a garder
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
         ligne_invalide={
@@ -238,28 +264,29 @@ def id_existant(df, df_ref, id, df_nom):
         lignes_invalides.append(ligne_invalide)
     return df_clean, lignes_invalides
 
+
 def correlation_usager(df):
     df_incorrect=df[
         (
-            df["type_usager" == "occasionnel"] 
-            and df["usager_ref" != ""] 
+            (df["type_usager"] == "occasionnel")
+            & (df["usager_ref"].notna())
         ) 
-        or 
+        | 
         (
-            df["type_usager" == "abonne"] 
-            and df["usager_ref" == ""]
+            (df["type_usager"] == "abonne")
+            & (df["usager_ref"].isna())
         )
     ] # donnees a supprimer
     df_clean=df[
         (
-            df["type_usager" == "occasionnel"] 
-            and df["usager_ref" == ""] 
+            (df["type_usager"] == "occasionnel")
+            & (df["usager_ref"].isna())
         ) 
-        or 
+        | 
         (
-            df["type_usager" == "abonne"] 
-            and df["usager_ref" != ""]
-        )
+            (df["type_usager"] == "abonne")
+            & (df["usager_ref"].notna())
+        ) 
     ] # donnees a garder
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
@@ -274,11 +301,12 @@ def correlation_usager(df):
         lignes_invalides.append(ligne_invalide)
     return df_clean, lignes_invalides
 
+
 def technicien_manquant(df):
     df_incorrect=df[
         (
-            df["statut" == ("resolu" or "en_cours")]
-            and df["technicien" == ""] 
+            (df["statut"] == ("resolu" or "en_cours"))
+            & df["technicien"].isna()
         )
     ]
     lignes_invalides=[]
@@ -294,8 +322,9 @@ def technicien_manquant(df):
         lignes_invalides.append(ligne_invalide)
     return lignes_invalides
 
-def technicien_manquant(df):
-    df_incorrect=df[df["station_arrivee" == ""]]
+
+def station_manquante(df):
+    df_incorrect=df[df["station_arrivee"].isna()]
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
         ligne_invalide={
@@ -308,3 +337,7 @@ def technicien_manquant(df):
         }
         lignes_invalides.append(ligne_invalide)
     return lignes_invalides
+
+oe, nan = format_date(df_incidents, "incidents.csv", "date_resolution", "%Y-%m-%d %H:%M")
+
+print(nan)

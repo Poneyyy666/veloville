@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS utilisateur;
 -- ---------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS stations(
-    station_id VARCHAR(4) CHECK (station_id LIKE 'S%' AND station_id LIKE '%[0-9]'),
+    station_id VARCHAR(10),
     nom VARCHAR(50) NOT NULL,
     commune VARCHAR(50) NOT NULL,
     capacite INT CHECK (capacite > 0) NOT NULL,
@@ -28,14 +28,14 @@ CREATE TABLE IF NOT EXISTS stations(
 -- ---------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS trajets(
-    trajet_id VARCHAR(7) CHECK (trajet_id LIKE 'T%' AND trajet_id LIKE '%[0-9]'),
-    velo_id VARCHAR(5) CHECK (velo_id LIKE 'V%' AND velo_id LIKE '%[0-9]') NOT NULL,
+    trajet_id VARCHAR(10),
+    velo_id VARCHAR(10),
     depart_horodatage DATE NOT NULL,
     station_depart VARCHAR(4) NOT NULL,
     station_arrivee VARCHAR(4),
     duree_secondes INT,
     type_usager VARCHAR(25) CHECK (type_usager IN ('abonne', 'occasionnel')) NOT NULL,
-    usager_ref VARCHAR(9) CHECK (usager_ref LIKE 'U%' AND usager_ref LIKE '%[^0-9A-F]'),
+    usager_ref VARCHAR(10),
     PRIMARY KEY(trajet_id),
     FOREIGN KEY(station_depart) REFERENCES Stations(station_id),
     FOREIGN KEY(station_arrivee) REFERENCES Stations(station_id)
@@ -46,13 +46,13 @@ CREATE TABLE IF NOT EXISTS trajets(
 -- ---------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS incidents(
-    incident_id VARCHAR(10) CHECK (incident_id LIKE 'I2026-%' AND incident_id LIKE '%[0-9]'),
+    incident_id VARCHAR(10),
     date_signalement DATE NOT NULL,
     cible CHAR(10) NOT NULL,
-    velo_id VARCHAR(5) CHECK (velo_id LIKE 'V%' AND velo_id LIKE '%[0-9]'),
+    velo_id VARCHAR(5),
     station_id VARCHAR(4),
     type_incident VARCHAR(25) CHECK (type_incident IN ('vandalisme', 'selle abimee', 'eclairage HS', 'chaine deraillee', 'ecran borne illisible', 'pneu creve', 'frein defectueux', 'borne hors service')) NOT NULL,
-    statut VARCHAR(25) CHECK (statut IN ('ouvert', 'en_cours', 'resolu')) NOT NULL,
+    statut VARCHAR(25) NOT NULL,
     date_resolution DATE,
     technicien VARCHAR(50),
     PRIMARY KEY(incident_id),
