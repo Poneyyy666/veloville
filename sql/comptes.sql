@@ -9,7 +9,7 @@
 --   python -c "import bcrypt; print(bcrypt.checkpw(b'Formation2026!', \
 --     b'<hachage>'))"
 
-INSERT INTO utilisateur (username, mot_de_passe_hash, role) VALUES
+INSERT INTO utilisateur (username, password_hash, role) VALUES
   ('exploitant01',
    '$2b$12$ej20gmOU7l.L1SOku8K66uV2PMETEc5ub8A.PM.Y.7QGHEvUlBkEi',
    'exploitant'),
@@ -17,5 +17,5 @@ INSERT INTO utilisateur (username, mot_de_passe_hash, role) VALUES
    '$2b$12$l8m1OACxjxS8rOcvTBH7oOuxkXEfMed1KAcZIZDxGZPLvBmR4w8We',
    'direction')
 ON CONFLICT (username) DO UPDATE
-  SET mot_de_passe_hash = EXCLUDED.mot_de_passe_hash,
+  SET password_hash = EXCLUDED.password_hash,
       role = EXCLUDED.role;
