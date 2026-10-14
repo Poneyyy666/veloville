@@ -10,15 +10,18 @@ from sqlalchemy.orm import Session
 from datetime import date
 
 from api.database import get_db
+from api.models import Station, Trajet, User
 
 def list_public_datasets(
-    date_debut, 
-    date_fin,
+    date_debut : date, 
+    date_fin : date,
     db: Session = Depends(get_db)
 ):
     dataset = db.scalar(
-        select(Dataset).where(
-            Dataset.id == dataset_id,
-            Dataset.is_public.is_(True),
+        select(Trajet).where(
+            Trajet.depart_horodatage >= date_debut,
+            Trajet.depart_horodatage <= date_fin,
         )
     )
+
+    return len(dataset)
