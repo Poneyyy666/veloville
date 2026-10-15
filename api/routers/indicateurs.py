@@ -14,13 +14,13 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.models import Trajet, Incident
-from api.schemas import TrajetResponse, IncidentResponse
+from api.schemas import IncidentResponse, TrajetPopulaireResponse, TrajetPeriodeResponse
 from api.services.indicateurs import trajets_periode, trajets_stations, incidents_statut
 
 router = APIRouter(prefix="/indicateurs", tags=["Indicateurs"])
 
-@router.get("/", response_model=TrajetResponse)
-def get_public_dataset(
+@router.get("/trajet_periode", response_model=list[TrajetPeriodeResponse])
+def get_trajets_periode(
     date_debut: datetime,
     date_fin: datetime,
     db: Session = Depends(get_db),
@@ -30,8 +30,8 @@ def get_public_dataset(
 
     return trajets
 
-@router.get("/", response_model=TrajetResponse)
-def get_public_dataset(
+@router.get("/trajets_stations", response_model=list[TrajetPopulaireResponse])
+def get_trajets_stations(
     limit: int,
     db: Session = Depends(get_db),
 ):
@@ -40,8 +40,8 @@ def get_public_dataset(
 
     return trajets
 
-@router.get("/", response_model=IncidentResponse)
-def get_public_dataset(
+@router.get("/incidents_statut", response_model=IncidentResponse)
+def get_incidents_statut(
     db: Session = Depends(get_db),
 ):
 

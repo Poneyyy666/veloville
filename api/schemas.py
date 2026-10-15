@@ -144,4 +144,15 @@ class PaginatedIncidentsResponse(BaseModel):
     total: int
     pages: int
 
-    
+class TrajetPeriodeResponse(BaseModel):
+  model_config = ConfigDict(from_attributes=True)
+
+  depart_horodatage: datetime
+  totalamount: int
+
+class TrajetPopulaireResponse(BaseModel):
+  model_config = ConfigDict(from_attributes=True)
+
+  station_depart: str
+  station_arrivee: Optional[str] = None
+  totalamount: int

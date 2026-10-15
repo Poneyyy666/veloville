@@ -19,38 +19,57 @@ def trajets_periode(
     date_fin : date,
     db: Session = Depends(get_db)
 ):
-    trajets = db.scalar(
+    total_alias = func.count().label("totalamount")
+
+    trajets = (
         select(
-            Trajet.station_depart, 
-            func.count(Trajet.station_depart).label("totalamount")
+            Trajet.depart_horodatage, 
+            total_alias
         ).where(
             Trajet.depart_horodatage >= date_debut,
             Trajet.depart_horodatage <= date_fin,
         ).group_by(
-            Trajet.station_depart
+            Trajet.depart_horodatage,
         ).order_by(
-            func.desc("totalamount"))
-    ).all()
+            total_alias.desc())
+    )
 
-    return trajets
+    result = db.execute(trajets).all()
+    return [
+        {
+              "depart_horodatage": row.depart_horodatage,
+              "totalamount": row.totalamount,
+        }
+        for row in result
+    ]
 
 def trajets_stations(
     limit: int,
     db: Session = Depends(get_db)
 ):
-    trajets = db.scalar(select(
+    total_alias = func.count().label("totalamount")
+
+    trajets = (select(
         Trajet.station_depart, 
         Trajet.station_arrivee, 
-        func.count("*").label("totalamount")
+        total_alias
     ).group_by(
         Trajet.station_depart,
         Trajet.station_arrivee
     ).order_by(
-        func.desc("totalamount")
+        total_alias.desc()
     ).limit(limit)
-    ).all()
+    )
 
-    return trajets
+    result = db.execute(trajets).all()
+    return [
+        {
+              "station_depart": row.station_depart,
+              "station_arrivee": row.station_arrivee,
+              "totalamount": row.totalamount,
+        }
+        for row in result
+    ]
 
 def incidents_statut(
     limit: int,
