@@ -40,6 +40,11 @@ def main() -> None:
 
     engine = create_engine(standard_url)
 
+    empty_df = pd.DataFrame()
+    empty_df.to_sql('incidents', con=engine, if_exists='delete_rows',index=False)
+    empty_df.to_sql('trajets', con=engine, if_exists='delete_rows',index=False)
+    empty_df.to_sql('stations', con=engine, if_exists='delete_rows',index=False)
+
     # # ---------------------------------------------------------------------------
     # # Importation des stations.csv
     # # ---------------------------------------------------------------------------
@@ -106,20 +111,25 @@ def main() -> None:
     df_incidents, lignes_ajout = fi.id_existant(df_incidents, df_stations, "station_id", "station_id", "incidents.csv")
     lignes_rapport.append(lignes_ajout)
 
+    df_incidents, lignes_ajout = fi.format_statut(df_incidents)
+    lignes_rapport.append(lignes_ajout)
+
     df_incidents.to_sql('incidents', con=engine, if_exists='delete_rows',index=False)
 
 
-    conn = psycopg2.connect(DATABASE_URL)
-    conn.autocommit = True
+    with engine.begin() as conn :
+        
+        conn.autocommit = True
 
-    conn.close()
+        pass
 
+    lignes_texte = [" ".join(str(mot) for mot in ligne) for ligne in lignes_rapport]
     with open(
         SORTIE_RAPPORT,
         "w",
         encoding="utf-8",
     ) as fichier:
-        fichier.write("\n".join(lignes_rapport))
+        fichier.write("\n".join(lignes_texte))
 
 
 if __name__ == "__main__":

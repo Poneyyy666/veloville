@@ -3,11 +3,13 @@
 À compléter : déclarer les quatre tables conformément à sql/schema.sql.
 """
 
+import sys
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+sys.path.append('../veloville')
 from api.database import Base
 
 
@@ -31,7 +33,7 @@ class Station(Base):
 
     __tablename__ = "stations"
 
-    station_id: Mapped[str] = mapped_column(String(10))(primary_key=True)
+    station_id: Mapped[str] = mapped_column(primary_key=True)
     nom: Mapped[str] = mapped_column(String(50))
     commune: Mapped[str] = mapped_column(String(50))
     capacite: Mapped[int] = mapped_column(Integer)
@@ -49,7 +51,7 @@ class Trajet(Base):
 
     __tablename__ = "trajets"
 
-    trajet_id: Mapped[str] = mapped_column(String(10))(primary_key=True)
+    trajet_id: Mapped[str] = mapped_column(primary_key=True)
     velo_id: Mapped[str] = mapped_column(String(10))
     depart_horodatage: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     station_depart: Mapped[str] = mapped_column(String(10))
@@ -57,6 +59,21 @@ class Trajet(Base):
     duree_secondes: Mapped[int] = mapped_column(Integer)
     type_usager: Mapped[str] = mapped_column(String(25))
     usager_ref: Mapped[str] = mapped_column(String(10))
+
+class Incident(Base):
+    """Jeu de données référencé dans le catalogue."""
+
+    __tablename__ = "trajets"
+
+    incident_id: Mapped[str] = mapped_column(primary_key=True)
+    date_signalement: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    cible: Mapped[str] = mapped_column(String(10))
+    velo_id: Mapped[str] = mapped_column(String(10))
+    station_id: Mapped[str] = mapped_column(String(10))
+    type_incident: Mapped[str] = mapped_column(String(25))
+    statut: Mapped[str] = mapped_column(String(25))
+    date_resolution: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    technicien: Mapped[str] = mapped_column(String(50))
 
 
 class QualityCheck(Base):

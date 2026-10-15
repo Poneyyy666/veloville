@@ -191,8 +191,8 @@ def format_date(df, df_nom, df_date, df_format):
 
 
 def correlation_dates(df):
-    df_incorrect=df[df["date_signalement"] >= df["date_resolution"]] # donnees a supprimer
-    df_clean=df[df["date_signalement"] < df["date_resolution"]] # donnees a garder
+    df_incorrect=df[(df["date_signalement"] >= df["date_resolution"]) & (df["date_resolution"].notna())] # donnees a supprimer
+    df_clean=df[(df["date_signalement"] < df["date_resolution"]) | (df["date_resolution"].isna())] # donnees a garder
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
         ligne_invalide={
@@ -338,6 +338,23 @@ def station_manquante(df):
         lignes_invalides.append(ligne_invalide)
     return lignes_invalides
 
-oe, nan = format_date(df_incidents, "incidents.csv", "date_resolution", "%Y-%m-%d %H:%M")
+def format_statut(df):
+    df_incorrect=df[~df["statut"].astype(str).str.islower()] # donneesé a supprimer
+    df_clean = df
+    df_clean["statut"]=df["statut"].astype(str).str.lower() # donnees a garder
+    lignes_invalides=[]
+    for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours
+        ligne_invalide={
+            "fichier_source" : "incidents.csv",
+            "identifiant" : index, # indice de la ligne, 
+            "colonne" : "statut",
+            "valeur" : row["statut"],
+            "motif" : "status invalide : mauvais format",
+            "décision" : "rejet"
+        }
+        lignes_invalides.append(ligne_invalide)
+    return df_clean, lignes_invalides
 
-print(nan)
+# oe, nan = format_statut(df_incidents)
+
+# print(oe)
