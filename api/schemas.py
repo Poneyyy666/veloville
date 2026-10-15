@@ -83,7 +83,7 @@ class DatasetCreate(BaseModel):
     is_public: bool = False
 
 
-class DatasetUpdate(DatasetCreate):
+class IncidenttUpdate(IncidentCreate):
     pass
 
 
