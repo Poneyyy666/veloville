@@ -5,7 +5,7 @@ connexion, réponse de connexion, corps de changement de statut, réponses
 des trois indicateurs.
 """
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -67,12 +67,12 @@ class TrajetCreate(BaseModel):
 class IncidentCreate(BaseModel):
     date_signalement: datetime
     cible: str = Field(min_length=1, max_length=10)
-    velo_id: str = Field(min_length=1, max_length=10)
-    station_id: str = Field(min_length=1, max_length=10)
+    velo_id: Optional[str] = Field(min_length=1, max_length=10), None
+    station_id: Optional[str] = Field(min_length=1, max_length=10), None
     type_incident: str = Field(min_length=1, max_length=25)
     statut: str = Field(min_length=1, max_length=25)
-    date_resolution: datetime
-    technicien: str = Field(min_length=1, max_length=50)
+    date_resolution: Optional[datetime] = None
+    technicien: Optional[str] = Field(min_length=1, max_length=50), None
 
 
 class DatasetCreate(BaseModel):
@@ -121,3 +121,27 @@ class QualityCheckResponse(QualityCheckCreate):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
+class PaginatedStationsResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    stations: list
+
+    # Informations nécessaires au client pour construire sa navigation.
+    page: int
+    page_size: int
+    total: int
+    pages: int
+
+class PaginatedIncidentsResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    incidents: list
+
+    # Informations nécessaires au client pour construire sa navigation.
+    page: int
+    page_size: int
+    total: int
+    pages: int
+
+    
