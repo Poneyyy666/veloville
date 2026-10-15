@@ -41,10 +41,6 @@ class Station(Base):
     longitude: Mapped[float] = mapped_column(Float)
     date_mise_en_service: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
-    # quality_checks: Mapped[list["QualityCheck"]] = relationship(
-    #     back_populates="dataset",
-    #     cascade="all, delete-orphan",
-    # )
 
 class Trajet(Base):
     """Jeu de données référencé dans le catalogue."""
@@ -60,10 +56,11 @@ class Trajet(Base):
     type_usager: Mapped[str] = mapped_column(String(25))
     usager_ref: Mapped[str] = mapped_column(String(10))
 
+
 class Incident(Base):
     """Jeu de données référencé dans le catalogue."""
 
-    __tablename__ = "trajets"
+    __tablename__ = "incidents"
 
     incident_id: Mapped[str] = mapped_column(primary_key=True)
     date_signalement: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -76,23 +73,23 @@ class Incident(Base):
     technicien: Mapped[str] = mapped_column(String(50))
 
 
-class QualityCheck(Base):
-    """Résultat d'un contrôle qualité effectué sur un dataset."""
+# class QualityCheck(Base):
+#     """Résultat d'un contrôle qualité effectué sur un dataset."""
 
-    __tablename__ = "quality_checks"
+#     __tablename__ = "quality_checks"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+#     station_id: Mapped[int] = mapped_column(primary_key=True)
 
-    dataset_id: Mapped[int] = mapped_column(
-        ForeignKey("datasets.id", ondelete="CASCADE"),
-        index=True,
-    )
+#     station_id: Mapped[int] = mapped_column(
+#         ForeignKey("stations.station_id", ondelete="CASCADE"),
+#         index=True,
+#     )
 
-    checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    score: Mapped[float] = mapped_column(Float)
-    status: Mapped[str] = mapped_column(String(20))
-    comment: Mapped[str] = mapped_column(String(500))
+#     checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+#     score: Mapped[float] = mapped_column(Float)
+#     status: Mapped[str] = mapped_column(String(20))
+#     comment: Mapped[str] = mapped_column(String(500))
 
-    dataset: Mapped[Dataset] = relationship(
-        back_populates="quality_checks",
-    )
+#     dataset: Mapped[Station] = relationship(
+#         back_populates="quality_checks",
+#     )
