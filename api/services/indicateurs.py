@@ -6,7 +6,7 @@ Les routeurs ne font qu'appeler ces fonctions.
 """
 import sys
 from fastapi import Depends
-from sqlalchemy import select, func
+from sqlalchemy import select, func, union_all
 from sqlalchemy.orm import Session
 from datetime import date
 
@@ -45,31 +45,59 @@ def trajets_periode(
 
 def trajets_stations(
     limit: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
+    depart_q = select(Trajet.station_depart.label("station"))
+    arrivee_q = select(Trajet.station_arrivee.label("station"))
+
+    stations_union = union_all(depart_q, arrivee_q).subquery()
     total_alias = func.count().label("totalamount")
 
-    trajets = (select(
-        Trajet.station_depart, 
-        Trajet.station_arrivee, 
-        total_alias
-    ).group_by(
-        Trajet.station_depart,
-        Trajet.station_arrivee
-    ).order_by(
-        total_alias.desc()
-    ).limit(limit)
+    stmt = (
+        select(
+            stations_union.c.station,
+            total_alias,
+        )
+        .group_by(stations_union.c.station)
+        .order_by(total_alias.desc())
+        .limit(limit)
     )
 
-    result = db.execute(trajets).all()
+    result = db.execute(stmt).all()
     return [
         {
-              "station_depart": row.station_depart,
-              "station_arrivee": row.station_arrivee,
-              "totalamount": row.totalamount,
+            "station": row.station,
+            "totalamount": row.totalamount,
         }
         for row in result
     ]
+# def trajets_stations(
+#     limit: int,
+#     db: Session = Depends(get_db)
+# ):
+#     total_alias = func.count().label("totalamount")
+
+#     trajets = (select(
+#         Trajet.station_depart, 
+#         Trajet.station_arrivee, 
+#         total_alias
+#     ).group_by(
+#         Trajet.station_depart,
+#         Trajet.station_arrivee
+#     ).order_by(
+#         total_alias.desc()
+#     ).limit(limit)
+#     )
+
+#     result = db.execute(trajets).all()
+#     return [
+#         {
+#               "station_depart": row.station_depart,
+#               "station_arrivee": row.station_arrivee,
+#               "totalamount": row.totalamount,
+#         }
+#         for row in result
+#     ]
 
 def incidents_statut(
     limit: int,

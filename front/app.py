@@ -12,8 +12,8 @@ import streamlit as st
 import api_client
 import commun
 
-st.set_page_config(page_title="Démo 04 - FastAPI et Streamlit", layout="wide")
-st.title("Démo 04 — Streamlit et FastAPI")
+st.set_page_config(page_title="Veloville", layout="wide")
+st.title("Veloville")
 
 # Streamlit réexécute ce script après chaque interaction.
 # st.session_state permet de conserver le numéro de page et le JWT.
