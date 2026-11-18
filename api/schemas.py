@@ -5,7 +5,7 @@ connexion, réponse de connexion, corps de changement de statut, réponses
 des trois indicateurs.
 """
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -83,8 +83,9 @@ class DatasetCreate(BaseModel):
     is_public: bool = False
 
 
-class IncidenttUpdate(IncidentCreate):
-    pass
+class IncidentUpdate(BaseModel):
+    incident_id: str
+    status: str
 
 
 class StationResponse(StationCreate):
@@ -133,6 +134,9 @@ class PaginatedStationsResponse(BaseModel):
     total: int
     pages: int
 
+class IncidentsIdsResponse(BaseModel):
+    ids: list
+
 class PaginatedIncidentsResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -155,3 +159,10 @@ class TrajetPopulaireResponse(BaseModel):
 
   station: str
   totalamount: int
+
+class IncidentStatusResponse(BaseModel):
+  model_config = ConfigDict(from_attributes=True)
+
+  statut: str
+  totalamount: int
+  duree_moyenne_execution: Optional[float]

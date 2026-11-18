@@ -42,9 +42,15 @@ try:
         "/indicateurs/trajets_stations",
         params={"limit": stations},
     )
+
+    donnees_incidents = api_client.obtenir(
+        "/indicateurs/incidents_statut",
+        params={"limit": stations},
+    )
     
 except api_client.ErreurApi as erreur:
     st.error(erreur.message)
 else:
     st.dataframe(donnees_period, use_container_width=True)
     st.dataframe(donnees_stations, use_container_width=True)
+    st.dataframe(donnees_incidents, use_container_width=True)

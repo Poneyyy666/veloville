@@ -50,3 +50,25 @@ except api_client.ErreurApi as erreur:
 else:
     st.dataframe(donnees["incidents"], use_container_width=True)
     st.caption(f"Page {donnees['page']} / {donnees['pages']}")
+
+with st.form("add_todo", clear_on_submit=True):
+    id_incident = st.selectbox("Incident", api_client.appeler("GET", "/incidents/incidents_ids",), index=1)
+    status = st.selectbox("Nouveau statut", ["en cours", "resolu"], index=1)
+    submitted = st.form_submit_button("Appliquer")
+
+    if submitted:
+        payload = {
+            "id_incident": id_incident,
+            "status_incident": status,
+        }
+    
+        try:
+            nouvelle_todo = api_client.appeler(
+                "PUT",
+                "/incidents/update_dataset",
+                params=payload,
+            )
+                
+            st.success(f"Todo créée avec l'id {nouvelle_todo['id']}")
+        except :
+            pass

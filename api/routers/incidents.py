@@ -4,6 +4,7 @@
 PUT /incidents/{incident_id}/statut (rôle exploitant).
 """
 import math
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy import select, func
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.models import Incident, User
-from api.schemas import IncidentResponse, PaginatedIncidentsResponse
+from api.schemas import IncidentResponse, PaginatedIncidentsResponse, IncidentUpdate, IncidentsIdsResponse
 
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
@@ -58,27 +59,54 @@ def list_incidents(
         pages=pages,
     )
 
-# @router.put("/{dataset_id}", response_model=IncidentResponse)
-# def update_dataset(
-#     dataset_id: int,
-#     data: IncidenttUpdate,
-#     db: Session = Depends(get_db),
-#     # current_user: User = Depends(require_roles("manager")),
-# ):
-#     """Modifie un dataset."""
+@router.get("/incidents_ids")
+def list_incidents(
+    db: Session = Depends(get_db),
+):
+    incidents = db.scalars(select(Incident)).all()
+    ids = []
+    for row in incidents :
+        ids.append(row.incident_id)
 
-#     incident = db.get(Incident, dataset_id)
+    return list(ids)
 
-#     if incident is None:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="Incident introuvable",
-#         )
+@router.put("/{dataset_id}", response_model=IncidentResponse)
+def update_dataset(
+    id_incident: str,
+    status_incident: str,
+    db: Session = Depends(get_db),
+):
+    """Modifie uniquement le statut d'un incident selon les transitions autorisées."""
 
-#     for field, value in data.model_dump().items():
-#         setattr(incident, field, value)
+    TRANSITIONS_AUTORISEES = {
+        "ouvert": {"en cours", "resolu"},
+        "en cours": {"resolu"},
+        "resolu": set(),
+    }
 
-#     db.commit()
-#     db.refresh(incident)
+    incident = db.get(Incident, id_incident)
 
-#     return incident
+    if incident is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incident introuvable",
+        )
+
+    statut_actuel = incident.statut
+
+    statuts_possibles = TRANSITIONS_AUTORISEES.get(statut_actuel, set())
+    if status_incident not in statuts_possibles:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Transition impossible : un incident '{statut_actuel}' ne peut pas passer à '{status_incident}'.",
+        )
+
+    incident.statut = status_incident
+
+    if status_incident == "resolu" and hasattr(incident, "date_resolution"):
+        incident.date_resolution = datetime.now(timezone.utc)
+
+    db.commit()
+    db.refresh(incident)
+
+    return incident

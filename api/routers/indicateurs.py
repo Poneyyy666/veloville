@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.models import Trajet, Incident
-from api.schemas import IncidentResponse, TrajetPopulaireResponse, TrajetPeriodeResponse
+from api.schemas import TrajetPopulaireResponse, TrajetPeriodeResponse, IncidentStatusResponse
 from api.services.indicateurs import trajets_periode, trajets_stations, incidents_statut
 
 router = APIRouter(prefix="/indicateurs", tags=["Indicateurs"])
@@ -40,11 +40,12 @@ def get_trajets_stations(
 
     return trajets
 
-@router.get("/incidents_statut", response_model=IncidentResponse)
+@router.get("/incidents_statut", response_model=list[IncidentStatusResponse])
 def get_incidents_statut(
+    limit: int,
     db: Session = Depends(get_db),
 ):
 
-    incidents, duree = incidents_statut(db)
+    incidents = incidents_statut(limit, db)
 
-    return incidents, duree
+    return incidents

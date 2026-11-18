@@ -37,8 +37,8 @@ def trajets_periode(
     result = db.execute(trajets).all()
     return [
         {
-              "depart_horodatage": row.depart_horodatage,
-              "totalamount": row.totalamount,
+            "depart_horodatage": row.depart_horodatage,
+            "totalamount": row.totalamount,
         }
         for row in result
     ]
@@ -47,18 +47,18 @@ def trajets_stations(
     limit: int,
     db: Session = Depends(get_db),
 ):
-    depart_q = select(Trajet.station_depart.label("station"))
-    arrivee_q = select(Trajet.station_arrivee.label("station"))
+    departs = select(Trajet.station_depart.label("station"))
+    arrivees = select(Trajet.station_arrivee.label("station"))
 
-    stations_union = union_all(depart_q, arrivee_q).subquery()
+    stations = union_all(departs, arrivees).subquery()
     total_alias = func.count().label("totalamount")
 
     stmt = (
         select(
-            stations_union.c.station,
+            stations.c.station,
             total_alias,
         )
-        .group_by(stations_union.c.station)
+        .group_by(stations.c.station)
         .order_by(total_alias.desc())
         .limit(limit)
     )
@@ -71,48 +71,50 @@ def trajets_stations(
         }
         for row in result
     ]
-# def trajets_stations(
-#     limit: int,
-#     db: Session = Depends(get_db)
-# ):
-#     total_alias = func.count().label("totalamount")
-
-#     trajets = (select(
-#         Trajet.station_depart, 
-#         Trajet.station_arrivee, 
-#         total_alias
-#     ).group_by(
-#         Trajet.station_depart,
-#         Trajet.station_arrivee
-#     ).order_by(
-#         total_alias.desc()
-#     ).limit(limit)
-#     )
-
-#     result = db.execute(trajets).all()
-#     return [
-#         {
-#               "station_depart": row.station_depart,
-#               "station_arrivee": row.station_arrivee,
-#               "totalamount": row.totalamount,
-#         }
-#         for row in result
-#     ]
 
 def incidents_statut(
     limit: int,
     db: Session = Depends(get_db)
 ):
-    incidents = db.scalar(select(
-        Incident.statut, 
-        func.count(Incident.statut).label("totalamount")
-    ).group_by(
-        Incident.statut
-    ).order_by(
-        func.desc("totalamount")
-    ).limit(limit)
-    ).all()
+    total_alias = func.count(Incident.statut).label("totalamount")
+    duree_alias = func.avg(Incident.date_resolution - Incident.date_signalement).label("duree_moyenne")
 
-    duree = Incident.date_signalement - Incident.date_resolution
+    query = (
+        select(
+            Incident.statut, 
+            total_alias,
+            duree_alias
+        )
+        .group_by(Incident.statut)
+        .order_by(total_alias.desc())  # Tri décroissant correct
+        .limit(limit)
+    )
 
-    return (incidents, duree)
+    result = db.execute(query).all()
+
+    return [
+        {
+            "statut": row.statut,
+            "totalamount": row.totalamount,
+            "duree_moyenne_execution": row.duree_moyenne
+        }
+        for row in result
+    ]
+
+# def incidents_statut(
+#     limit: int,
+#     db: Session = Depends(get_db)
+# ):
+#     incidents = db.scalar(select(
+#         Incident.statut, 
+#         func.count(Incident.statut).label("totalamount")
+#     ).group_by(
+#         Incident.statut
+#     ).order_by(
+#         func.desc("totalamount")
+#     ).limit(limit)
+#     ).all()
+
+#     duree = Incident.date_signalement - Incident.date_resolution
+
+#     return (incidents, duree)

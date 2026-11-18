@@ -140,6 +140,18 @@ def obtenir(
         params=params,
     )
 
+def edit(
+    path: str,
+    params: dict,
+) -> dict:
+    """Effectue un POST vers FastAPI."""
+
+    return appeler(
+        "POST",
+        path,
+        params=params,
+    )
+
 def est_connecte() -> bool:
     """Indique si un JWT est présent dans la session courante."""
     return bool(st.session_state.get("access_token"))
