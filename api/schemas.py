@@ -10,7 +10,7 @@ from typing import Literal, Optional, List
 from pydantic import BaseModel, ConfigDict, Field
 
 
-Role = Literal["viewer", "analyst", "manager"]
+Role = Literal["exploitant", "direction"]
 QualityStatus = Literal["PASS", "WARNING", "FAIL"]
 
 

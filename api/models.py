@@ -16,7 +16,7 @@ from api.database import Base
 class User(Base):
     """Utilisateur de l'API."""
 
-    __tablename__ = "users"
+    __tablename__ = "utilisateur"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)

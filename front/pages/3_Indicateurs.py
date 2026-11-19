@@ -13,7 +13,7 @@ import front.api_client as api_client
 if "page_items" not in st.session_state:
   st.session_state["page_items"] = 1
 
-st.header("Incidents")
+st.header("Indicateurs")
 
 col1, col2, col3 = st.columns(3)
 

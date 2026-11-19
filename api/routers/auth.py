@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.models import User
 from api.schemas import LoginRequest, RegisterRequest, TokenResponse, UserResponse
-from api.securite import create_access_token, hash_password, verify_password
+from api.security import create_access_token, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["Authentification"])
 

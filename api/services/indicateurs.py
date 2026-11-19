@@ -45,7 +45,7 @@ def trajets_periode(
 
 def trajets_stations(
     limit: int,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ):
     departs = select(Trajet.station_depart.label("station"))
     arrivees = select(Trajet.station_arrivee.label("station"))

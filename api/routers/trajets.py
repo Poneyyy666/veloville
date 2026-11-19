@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.models import Trajet, User
 from api.schemas import TrajetResponse
+from api.dependencies import require_roles
 
 router = APIRouter(prefix="/trajets", tags=["Trajets"])
 
@@ -24,6 +25,7 @@ def list_trajets(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=5, ge=1, le=50),
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction"))
 ):
     total = db.scalar(
         select(func.count()).select_from(Trajet)

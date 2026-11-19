@@ -13,9 +13,10 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from api.database import get_db
-from api.models import Trajet, Incident
+from api.models import User
 from api.schemas import TrajetPopulaireResponse, TrajetPeriodeResponse, IncidentStatusResponse
 from api.services.indicateurs import trajets_periode, trajets_stations, incidents_statut
+from api.dependencies import require_roles
 
 router = APIRouter(prefix="/indicateurs", tags=["Indicateurs"])
 
@@ -24,6 +25,7 @@ def get_trajets_periode(
     date_debut: datetime,
     date_fin: datetime,
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction")),
 ):
 
     trajets = trajets_periode(date_debut, date_fin, db)
@@ -34,6 +36,7 @@ def get_trajets_periode(
 def get_trajets_stations(
     limit: int,
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction")),
 ):
 
     trajets = trajets_stations(limit, db)
@@ -44,6 +47,7 @@ def get_trajets_stations(
 def get_incidents_statut(
     limit: int,
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction01")),
 ):
 
     incidents = incidents_statut(limit, db)

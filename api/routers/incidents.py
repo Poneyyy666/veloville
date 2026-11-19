@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.models import Incident, User
 from api.schemas import IncidentResponse, PaginatedIncidentsResponse, IncidentUpdate, IncidentsIdsResponse
+from api.dependencies import require_roles
 
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
@@ -22,6 +23,7 @@ def list_incidents(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=5, ge=1, le=50),
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction"))
 ):
     total = db.scalar(
         select(func.count()).select_from(Incident)
@@ -62,6 +64,7 @@ def list_incidents(
 @router.get("/incidents_ids")
 def list_incidents(
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction"))
 ):
     incidents = db.scalars(select(Incident)).all()
     ids = []
@@ -75,6 +78,7 @@ def update_dataset(
     id_incident: str,
     status_incident: str,
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant"))
 ):
     """Modifie uniquement le statut d'un incident selon les transitions autorisées."""
 

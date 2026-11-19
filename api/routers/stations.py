@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.models import Station, User
 from api.schemas import StationResponse, PaginatedStationsResponse
+from api.dependencies import require_roles
 
 router = APIRouter(prefix="/stations", tags=["Stations"])
 
@@ -21,6 +22,7 @@ def list_stations(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=5, ge=1, le=50),
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction"))
 ):
     count_stmt = select(func.count()).select_from(Station)
     if commune != "Toutes":
@@ -64,6 +66,7 @@ def list_stations(
 def get_station(
     station_id: str,
     db: Session = Depends(get_db),
+    current_manager: User = Depends(require_roles("exploitant", "direction"))
 ):
 
     station = db.scalar(
