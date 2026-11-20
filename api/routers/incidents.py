@@ -101,7 +101,7 @@ def update_dataset(
     statuts_possibles = TRANSITIONS_AUTORISEES.get(statut_actuel, set())
     if status_incident not in statuts_possibles:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Transition impossible : un incident '{statut_actuel}' ne peut pas passer à '{status_incident}'.",
         )
 

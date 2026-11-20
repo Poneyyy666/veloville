@@ -1,5 +1,16 @@
 # Procédure de déploiement
 
-À compléter : prérequis, création de la base et du rôle PostgreSQL, variables
-d'environnement, import des données, lancement de l'API et du front, sauvegarde
-et restauration, vérifications après déploiement.
+Créez la base veloville et le rôle PostgreSQL associé, puis importez les données en lançant `importer.py`
+
+Lancer l'api 
+
+```bash
+python -m uvicorn api.main:app --reload
+```
+
+
+Lancer streamlit
+
+```bash
+python -m streamlit run front/app.py
+```

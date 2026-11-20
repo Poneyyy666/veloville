@@ -1,6 +1,4 @@
 """Écran Stations.
-
-À compléter : tableau des stations filtrable par commune, pagination.
 """
 import sys
 import streamlit as st

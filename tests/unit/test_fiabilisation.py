@@ -1,6 +1,4 @@
 """Tests unitaires des règles de fiabilisation.
-
-À compléter : un test par règle, cas nominal et cas de rejet.
 """
 
 from api.services.fiabilisation import correction_doublons, capacite_zero, format_date, correlation_dates, correlation_cible, id_existant, correlation_usager, technicien_manquant, station_manquante, format_statut

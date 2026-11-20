@@ -1,6 +1,4 @@
 """Routeur auth.
-
-À compléter : POST /auth/login.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select

@@ -1,6 +1,4 @@
 """Routeur stations.
-
-À compléter : GET /stations (filtre commune, pagination) et GET /stations/{station_id}.
 """
 
 import math
@@ -78,7 +76,7 @@ def get_station(
     if station is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Dataset introuvable",
+            detail="Station introuvable",
         )
 
     return station
