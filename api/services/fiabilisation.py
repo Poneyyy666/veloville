@@ -70,7 +70,7 @@ def format_date(df, df_nom, df_date, df_format):
         dates_normalisees.dt.strftime(df_format)
     ) # donnees a garder
 
-    df_clean = df
+    df_clean = df.copy()
     df_clean[df_date] = pd.to_datetime(dates_propres[df_date]).dt.date
 
     df_incorrect = df[(df[df_date] != (df_clean[df_date])) & df[df_date].notna()]
@@ -204,7 +204,7 @@ def correlation_usager(df):
 def technicien_manquant(df):
     df_incorrect=df[
         (
-            (df["statut"] == ("resolu" or "en_cours"))
+            (df["statut"].isin(["resolu", "en_cours"]))
             & df["technicien"].isna()
         )
     ]
@@ -238,8 +238,8 @@ def station_manquante(df):
     return lignes_invalides
 
 def format_statut(df):
-    df_incorrect=df[~df["statut"].astype(str).str.islower()] # donneesé a supprimer
-    df_clean = df
+    df_incorrect=df[~df["statut"].astype(str).str.islower()] # donnees a supprimer
+    df_clean = df.copy()
     df_clean["statut"]=df["statut"].astype(str).str.lower() # donnees a garder
     lignes_invalides=[]
     for index, row in df_incorrect.iterrows(): # index : indice en cours, row : dictionnaire representant la ligne en cours

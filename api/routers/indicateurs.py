@@ -47,7 +47,7 @@ def get_trajets_stations(
 def get_incidents_statut(
     limit: int,
     db: Session = Depends(get_db),
-    current_manager: User = Depends(require_roles("exploitant", "direction01")),
+    current_manager: User = Depends(require_roles("exploitant", "direction")),
 ):
 
     incidents = incidents_statut(limit, db)

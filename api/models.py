@@ -71,25 +71,3 @@ class Incident(Base):
     statut: Mapped[str] = mapped_column(String(25))
     date_resolution: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     technicien: Mapped[str] = mapped_column(String(50))
-
-
-# class QualityCheck(Base):
-#     """Résultat d'un contrôle qualité effectué sur un dataset."""
-
-#     __tablename__ = "quality_checks"
-
-#     station_id: Mapped[int] = mapped_column(primary_key=True)
-
-#     station_id: Mapped[int] = mapped_column(
-#         ForeignKey("stations.station_id", ondelete="CASCADE"),
-#         index=True,
-#     )
-
-#     checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-#     score: Mapped[float] = mapped_column(Float)
-#     status: Mapped[str] = mapped_column(String(20))
-#     comment: Mapped[str] = mapped_column(String(500))
-
-#     dataset: Mapped[Station] = relationship(
-#         back_populates="quality_checks",
-#     )
